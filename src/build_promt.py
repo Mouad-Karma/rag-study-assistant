@@ -13,6 +13,6 @@ Contexte :
 
 Question : {question}
 
-Réponds de manière claire et concise, en te basant uniquement sur le contexte. Indique la page source à la fin de ta réponse (ex: "Source : page X"). Si l'information n'est pas dans le contexte, dis-le clairement plutôt que d'inventer."""
+Réponds par la meme langue de la question et de manière claire et concise, en te basant uniquement sur le contexte. Indique la page source à la fin de ta réponse (ex: "Source : page X"). Si l'information n'est pas dans le contexte, dis-le clairement plutôt que d'inventer."""
 
     return prompt
