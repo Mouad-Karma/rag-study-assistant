@@ -13,6 +13,7 @@ from dep_index import index_chunks
 from retrieve_chunks import retrieve_chunks
 from build_promt import build_prompt
 from generate_response import generate_answer
+from generate_quiz import generate_quiz
 
 load_dotenv(".env")
 
@@ -69,24 +70,104 @@ with st.sidebar:
     st.divider()
     st.caption(f"Total dans la base : {collection.count()} chunks")
 
-# === ZONE PRINCIPALE — question / réponse ===
-question = st.text_input("Pose ta question sur le cours :")
+# === ZONE PRINCIPALE — question / réponse ou quiz ===
+mode = st.radio("Choisis un mode :", ("Poser une question", "Générer un quiz"), horizontal=True)
 
-if question:
-    with st.spinner("Recherche et génération de la réponse..."):
-        retrieved_chunks, retrieved_metadatas = retrieve_chunks(question, collection, model, n_results=5)
+if mode == "Poser une question":
+    question = st.text_input("Pose ta question sur le cours :")
 
-        if not retrieved_chunks:
+    if question:
+        with st.spinner("Recherche et génération de la réponse..."):
+            retrieved_chunks, retrieved_metadatas = retrieve_chunks(question, collection, model, n_results=5)
+
+            if not retrieved_chunks:
+                st.warning("Aucun contenu indexé pour l'instant — upload un PDF d'abord.")
+            else:
+                prompt = build_prompt(question, retrieved_chunks, retrieved_metadatas)
+                answer = generate_answer(prompt, groq_client)
+
+                st.markdown("### Réponse")
+                st.write(answer)
+
+                with st.expander("Voir les passages sources utilisés"):
+                    for chunk, meta in zip(retrieved_chunks, retrieved_metadatas):
+                        st.markdown(f"**{meta['source']} — page {meta['page']}**")
+                        st.text(chunk)
+                        st.divider()
+
+else:
+    st.subheader("Générer un quiz")
+    st.caption("Le quiz est créé uniquement à partir des passages pertinents de tes documents indexés.")
+
+    with st.form("quiz_settings"):
+        topic = st.text_input("Sujet du quiz")
+        num_questions = st.slider("Nombre de questions", min_value=1, max_value=10, value=5)
+        generate = st.form_submit_button("Générer le quiz")
+
+    if generate:
+        if collection.count() == 0:
             st.warning("Aucun contenu indexé pour l'instant — upload un PDF d'abord.")
+        elif not topic.strip():
+            st.warning("Indique un sujet pour le quiz.")
         else:
-            prompt = build_prompt(question, retrieved_chunks, retrieved_metadatas)
-            answer = generate_answer(prompt, groq_client)
+            with st.spinner("Recherche des passages et génération du quiz..."):
+                try:
+                    n_results = min(10, collection.count())
+                    retrieved_chunks, retrieved_metadatas = retrieve_chunks(
+                        topic, collection, model, n_results=n_results
+                    )
+                    quiz = generate_quiz(
+                        topic,
+                        retrieved_chunks,
+                        retrieved_metadatas,
+                        groq_client,
+                        num_questions=num_questions,
+                    )
+                    for key in list(st.session_state):
+                        if key.startswith("quiz_answer_"):
+                            del st.session_state[key]
+                    st.session_state.quiz = quiz
+                    st.session_state.quiz_submitted = False
+                except ValueError as error:
+                    st.error(f"Impossible de générer le quiz : {error}")
+                except Exception:
+                    st.error("Impossible de générer le quiz pour le moment. Réessaie plus tard.")
 
-            st.markdown("### Réponse")
-            st.write(answer)
+    quiz = st.session_state.get("quiz")
+    if quiz:
+        with st.form("quiz_answers_form"):
+            answers = []
+            for index, quiz_question in enumerate(quiz["questions"], start=1):
+                st.markdown(f"**Question {index}. {quiz_question['question']}**")
+                answer = st.radio(
+                    "Choisis une réponse",
+                    options=[None, 0, 1, 2, 3],
+                    format_func=lambda option, choices=quiz_question["options"]: (
+                        "-- Sélectionne une réponse --" if option is None else choices[option]
+                    ),
+                    key=f"quiz_answer_{index}",
+                )
+                answers.append(answer)
 
-            with st.expander("Voir les passages sources utilisés"):
-                for chunk, meta in zip(retrieved_chunks, retrieved_metadatas):
-                    st.markdown(f"**{meta['source']} — page {meta['page']}**")
-                    st.text(chunk)
-                    st.divider()
+            submit_answers = st.form_submit_button("Voir mon résultat")
+
+        if submit_answers:
+            st.session_state.quiz_results = answers
+            st.session_state.quiz_submitted = True
+
+        if st.session_state.get("quiz_submitted"):
+            answers = st.session_state.quiz_results
+            score = sum(
+                answer == quiz_question["correct_answer"]
+                for answer, quiz_question in zip(answers, quiz["questions"])
+            )
+            st.success(f"Résultat : {score}/{len(quiz['questions'])}")
+
+            for index, (answer, quiz_question) in enumerate(zip(answers, quiz["questions"]), start=1):
+                correct_option = quiz_question["options"][quiz_question["correct_answer"]]
+                if answer == quiz_question["correct_answer"]:
+                    st.success(f"Question {index} : bonne réponse.")
+                else:
+                    st.error(f"Question {index} : la bonne réponse était « {correct_option} ».")
+                st.write(quiz_question["explanation"])
+                st.caption(f"Source : {quiz_question['source']} — page {quiz_question['page']}")
