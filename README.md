@@ -12,6 +12,8 @@ Built to demonstrate practical RAG / LLM engineering skills: PDF ingestion, chun
 -  Source citation — every answer points back to the exact document and page
 -  Anti-hallucination guardrail — the assistant says when the answer isn't in the course content, instead of making things up
 -  Deduplication — re-indexing the same PDF never creates duplicate chunks (content-hash based IDs)
+-  Conversation history with expandable source passages, kept separately for each selected document
+-  Interactive quizzes with one question at a time, immediate explanations, progress, scores, and retry
 
 ## Tech stack
 
@@ -77,10 +79,11 @@ streamlit run app.py
 
 Then in the browser:
 1. Upload a course PDF in the sidebar
-2. Click **"Indexer ce document"** and wait for the confirmation message
-3. Ask a question in the main text box — the answer will appear with an expandable section showing the exact source passages used
+2. The PDF is indexed automatically — wait for the confirmation message
+3. Ask a question in **Discussion** — answers remain in the conversation with expandable source passages
+4. Switch to **Quiz interactif**, enter a topic, and create a quiz. Validate each answer to see its explanation, then review your score or replay the quiz
 
-You can upload and index several PDFs — the assistant searches across all of them at once, so you can ask questions spanning multiple courses.
+While a PDF is selected in the uploader, questions focus on that document. Short PDFs are provided in full to support overview questions. Remove the PDF from the uploader to search across all indexed documents; removing it does not delete it from the index.
 
 ## Resetting the vector store
 

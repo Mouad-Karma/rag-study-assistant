@@ -1,0 +1,30 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;600;700;800&display=swap');
+/* Keep Streamlit's icon fonts intact: style text elements only. */
+html, body, p, input, textarea, [data-testid="stMarkdownContainer"] {font-family: 'DM Sans', sans-serif;}
+.stApp {background: #f8f9f5;}
+.stMainBlockContainer {max-width: 1120px; padding-top: 2.5rem; padding-bottom: 4rem;}
+h1, h2, h3 {font-family: 'Manrope', sans-serif !important; letter-spacing: -.035em; color: #203c36;}
+h1 {font-size: clamp(2rem, 4vw, 3rem) !important; font-weight: 800 !important; max-width: 800px;}
+h3 {line-height: 1.5 !important;}
+.eyebrow {font-size: .72rem; letter-spacing: .19em; font-weight: 700; color: #127568; margin-bottom: .7rem;}
+[data-testid="stSidebar"] {background: #edf2ec; border-right: 1px solid #dce5dc;}
+[data-testid="stSidebar"] h2 {font-size: 1.5rem;}
+[data-testid="stVerticalBlockBorderWrapper"] > div {border-radius: 18px !important; border-color: #dce5dc !important; background: #fff;}
+[data-testid="stChatMessage"] {background: #fff; border: 1px solid #e0e7df; border-radius: 18px; padding: 1.25rem; margin: .75rem 0;}
+[data-testid="stFileUploader"] {border-radius: 14px;}
+[data-testid="stFileUploaderDropzone"] {padding: 1rem; border: 1px dashed #9db6aa; border-radius: 14px; gap: .75rem;}
+[data-testid="stFileUploaderDropzone"] button {min-height: 2.75rem; border-radius: 9px;}
+[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {gap: .85rem;}
+[data-testid="stSidebar"] hr {margin: .75rem 0;}
+.st-key-study_mode {margin: .75rem 0 1.25rem;}
+.st-key-study_mode button {min-height: 3rem; font-weight: 600;}
+.stButton > button, .stFormSubmitButton > button {border-radius: 10px; min-height: 2.8rem; font-weight: 600;}
+.stButton > button:hover {border-color: #127568;}
+[data-testid="stMetricValue"] {color: #127568; font-family: 'Manrope', sans-serif;}
+[data-testid="stCaptionContainer"] {color: #5a7067;}
+[data-testid="stRadio"] label {padding-top: .3rem; padding-bottom: .3rem;}
+[data-testid="stExpander"] {border-radius: 12px;}
+[data-testid="stChatInput"] {border-radius: 16px;}
+@media(max-width: 640px) {.stMainBlockContainer {padding-top: 1.5rem;} h1 {font-size: 2rem !important;}}
+</style>
